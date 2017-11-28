@@ -24,10 +24,10 @@
 /w44668
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Engine\Private\PhysicsEngine"
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source\OpenVRExpansionPlugin\Public
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\OpenVRExpansionPlugin
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source\OpenVRExpansionPlugin
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source\OpenVRExpansionPlugin\Public
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\OpenVRExpansionPlugin
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Source\OpenVRExpansionPlugin
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public\Internationalization"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public\Async"
@@ -360,13 +360,13 @@
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Plugins\Runtime\ProceduralMeshComponent\Source\ProceduralMeshComponent\Public"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Plugins\Runtime\ProceduralMeshComponent\Intermediate\Build\Win64\UE4Editor\Inc\ProceduralMeshComponent"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Plugins\Runtime\ProceduralMeshComponent\Source\ProceduralMeshComponent"
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Interactibles
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Misc
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\SimpleChar
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\VRExpansionPlugin
-/I C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Interactibles
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Misc
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\SimpleChar
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\VRExpansionPlugin
+/I C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\ThirdParty\PhysX"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Plugins\Runtime\Steam\SteamVR\Source\SteamVR\Classes"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Plugins\Runtime\Steam\SteamVR\Source\SteamVR\Public"
@@ -404,9 +404,9 @@
 /FI"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\Engine\SharedPCH.Engine.h"
 /Yu"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\Engine\SharedPCH.Engine.h"
 /Fp"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\Engine\SharedPCH.Engine.h.pch"
-"C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.gen.cpp"
-/FI"C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Definitions.OpenVRExpansionPlugin.h"
-/Fo"C:\Users\u0409453\GameDevelopment\Unreal\NotNotNightRider\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.gen.cpp.obj"
+"C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.gen.cpp"
+/FI"C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Definitions.OpenVRExpansionPlugin.h"
+/Fo"C:\Users\u1166417\Documents\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.gen.cpp.obj"
 /TP
 /GR-
 /W4
