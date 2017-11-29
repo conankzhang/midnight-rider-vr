@@ -18,6 +18,10 @@
 		{
 			"Name": "VRExpansionPlugin",
 			"Enabled": true
+		},
+		{
+			"Name": "SoundVisualizations",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
