@@ -300,7 +300,7 @@
 /DPLATFORM_WINDOWS=1
 /DDEPTH_32_BIT_CONVERSION=0
 /DPROJECT_COPYRIGHT_STRING="Fill out your copyright notice in the Description page of Project Settings."
-/DPROJECT_PRODUCT_NAME="Virtual Reality BP Game Template"
+/DPROJECT_PRODUCT_NAME="Night Rider VR"
 /DPROJECT_PRODUCT_IDENTIFIER=NotNotNightRider
 /DNDEBUG=1
 /DUE_BUILD_DEVELOPMENT=1
