@@ -23,16 +23,16 @@
 /wd4838
 /w44668
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source"
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Private
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Private\SimpleChar
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Private
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Private\SimpleChar
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Engine\Private\PhysicsEngine"
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Interactibles
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Misc
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\SimpleChar
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\VRExpansionPlugin
-/I C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Interactibles
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\Misc
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin\Public\SimpleChar
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Inc\VRExpansionPlugin
+/I C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Source\VRExpansionPlugin
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public\Internationalization"
 /I "C:\Program Files\Epic Games\UE_4.18\Engine\Source\Runtime\Core\Public\Async"
@@ -403,9 +403,9 @@
 /FI"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\UnrealEd\SharedPCH.UnrealEd.h"
 /Yu"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\UnrealEd\SharedPCH.UnrealEd.h"
 /Fp"C:\Program Files\Epic Games\UE_4.18\Engine\Intermediate\Build\Win64\UE4Editor\Development\UnrealEd\SharedPCH.UnrealEd.h.pch"
-"C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Module.VRExpansionPlugin.gen.4_of_5.cpp"
-/FI"C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Definitions.VRExpansionPlugin.h"
-/Fo"C:\Users\u1166636\Documents\GitHub\KnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Module.VRExpansionPlugin.gen.4_of_5.cpp.obj"
+"C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Module.VRExpansionPlugin.gen.4_of_5.cpp"
+/FI"C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Definitions.VRExpansionPlugin.h"
+/Fo"C:\github\MidnightRiderVR\Plugins\VRExpansionPlugin\VRExpansionPlugin\Intermediate\Build\Win64\UE4Editor\Development\VRExpansionPlugin\Module.VRExpansionPlugin.gen.4_of_5.cpp.obj"
 /TP
 /GR-
 /W4
