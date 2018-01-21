@@ -1,8 +1,0 @@
-/NOLOGO
-/errorReport:prompt
-/MACHINE:x64
-/SUBSYSTEM:WINDOWS
-"C:\Users\u0409453\GameDevelopment\Unreal\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.cpp.obj"
-"C:\Users\u0409453\GameDevelopment\Unreal\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Intermediate\Build\Win64\UE4\Development\OpenVRExpansionPlugin\Module.OpenVRExpansionPlugin.gen.cpp.obj"
-"C:\Users\u0409453\GameDevelopment\Unreal\KnightRiderVR\Intermediate\Build\Win64\UE4\Development\OpenVRExpansionPlugin\PCLaunch.rc.res"
-/OUT:"C:\Users\u0409453\GameDevelopment\Unreal\KnightRiderVR\Plugins\VRExpansionPlugin\OpenVRExpansionPlugin\Binaries\Win64\UE4-OpenVRExpansionPlugin.lib"
