@@ -28,7 +28,8 @@ UENUM(BlueprintType)
 enum class EVRCustomMovementMode : uint8
 {
 	VRMOVE_Climbing UMETA(DisplayName = "Climbing"),
-	VRMOVE_LowGrav  UMETA(DisplayName = "LowGrav")
+	VRMOVE_LowGrav  UMETA(DisplayName = "LowGrav"),
+	VRMOVE_Seated UMETA(DisplayName = "Seated")
 //	VRMove_Spider UMETA(DisplayName = "Spider")
 };
 
@@ -47,12 +48,12 @@ enum class EVRConjoinedMovementModes : uint8
 	C_VRMOVE_Climbing = 0x08 UMETA(DisplayName = "Climbing"),
 	C_VRMOVE_LowGrav = 0x09 UMETA(DisplayName = "LowGrav"),
 	//C_VRMOVE_Spider = 0x0A UMETA(DisplayName = "Spider"),
-	C_VRMOVE_Custom1 = 0x0A UMETA(DisplayName = "Custom1"),
-	C_VRMOVE_Custom2 = 0x0B UMETA(DisplayName = "Custom2"),
-	C_VRMOVE_Custom3 = 0x0C UMETA(DisplayName = "Custom3"),
-	C_VRMOVE_Custom4 = 0x0D UMETA(DisplayName = "Custom4"),
-	C_VRMOVE_Custom5 = 0x0E UMETA(DisplayName = "Custom5"),
-	C_VRMOVE_Custom6 = 0x0F UMETA(DisplayName = "Custom6")
+	C_VRMOVE_Seated = 0x0A UMETA(DisplayName = "Seated"),
+	C_VRMOVE_Custom1 = 0x0B UMETA(DisplayName = "Custom1"),
+	C_VRMOVE_Custom2 = 0x0C UMETA(DisplayName = "Custom2"),
+	C_VRMOVE_Custom3 = 0x0D UMETA(DisplayName = "Custom3"),
+	C_VRMOVE_Custom4 = 0x0E UMETA(DisplayName = "Custom4"),
+	C_VRMOVE_Custom5 = 0x0F UMETA(DisplayName = "Custom5")
 };
 
 // This makes a lot of the blueprint functions cleaner
@@ -512,7 +513,9 @@ enum class ESecondaryGripType : uint8
 	SG_Free_Retain, // Retain pos on drop
 	SG_SlotOnly_Retain, 
 	SG_FreeWithScaling_Retain, // Scaling with retain pos on drop
-	SG_SlotOnlyWithScaling_Retain
+	SG_SlotOnlyWithScaling_Retain,
+	SG_Custom, // Does nothing, just provides the events for personal use
+	SG_ScalingOnly, // Does not track the hand, only scales the mesh with it
 };
 
 // Grip Late Update information
@@ -692,6 +695,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SecondaryGripSettings", meta = (editcondition = "bUseSecondaryGripSettings"))
 		bool bUseSecondaryGripDistanceInfluence;
 
+	// If true, will use the GripInfluenceDeadZone as a constant value instead of calculating the distance and lerping, lets you define a static influence amount.
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SecondaryGripSettings", meta = (editcondition = "bUseSecondaryGripDistanceInfluence"))
+	//	bool bUseGripInfluenceDeadZoneAsConstant;
+
 	// Distance from grip point in local space where there is 100% influence
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SecondaryGripSettings", meta = (editcondition = "bUseSecondaryGripDistanceInfluence", ClampMin = "0.00", UIMin = "0.00", ClampMax = "256.00", UIMax = "256.00"))
 		float GripInfluenceDeadZone;
@@ -720,6 +727,7 @@ public:
 		bUseSecondaryGripSettings(false),
 		SecondaryGripScaler(1.0f),
 		bUseSecondaryGripDistanceInfluence(false),
+		//bUseGripInfluenceDeadZoneAsConstant(false),
 		GripInfluenceDeadZone(50.0f),
 		GripInfluenceDistanceToZero(100.0f),
 		bLimitGripScaling(false),
@@ -752,17 +760,20 @@ public:
 			{
 				//Ar << GripInfluenceDeadZone;
 				//Ar << GripInfluenceDistanceToZero;
+				//Ar.SerializeBits(&bUseGripInfluenceDeadZoneAsConstant, 1);
 
 				// Forcing a maximum value here so that we can compress it by making assumptions
 				// 256 max value = 8 bits + 1 bit for sign + 7 bits for precision (up to 128 on precision, so full range 2 digit precision).
 				if (Ar.IsSaving())
 				{
 					bOutSuccess &= WriteFixedCompressedFloat<256, 16>(GripInfluenceDeadZone, Ar);
+					//if(!bUseGripInfluenceDeadZoneAsConstant)
 					bOutSuccess &= WriteFixedCompressedFloat<256, 16>(GripInfluenceDistanceToZero, Ar);
 				}
 				else
 				{
 					bOutSuccess &= ReadFixedCompressedFloat<256, 16>(GripInfluenceDeadZone, Ar);
+					//if (!bUseGripInfluenceDeadZoneAsConstant)
 					bOutSuccess &= ReadFixedCompressedFloat<256, 16>(GripInfluenceDistanceToZero, Ar);
 				}
 			}
@@ -798,6 +809,12 @@ struct VREXPANSIONPLUGIN_API FBPAdvGripSettings
 	GENERATED_BODY()
 public:
 
+	// Priority of this item when being gripped, (Higher is more priority)
+	// This lets you prioritize whether an object should be gripped over another one when both
+	// collide with traces or overlaps. #Note: Currently not implemented in the plugin, here for your use.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AdvancedGripSettings")
+		uint8 GripPriority;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AdvancedGripSettings")
 		FBPAdvGripPhysicsSettings PhysicsSettings;
 
@@ -805,7 +822,8 @@ public:
 		FBPAdvSecondaryGripSettings SecondaryGripSettings;
 
 
-	FBPAdvGripSettings()
+	FBPAdvGripSettings() :
+		GripPriority(1)
 	{}
 };
 
@@ -990,7 +1008,8 @@ public:
 		FTransform_NetQuantize RelativeTransform;
 	UPROPERTY(BlueprintReadWrite, Category = "Settings")
 		bool bIsSlotGrip;
-
+	UPROPERTY(BlueprintReadWrite, Category = "Settings")
+		FName GrippedBoneName;
 	UPROPERTY(BlueprintReadOnly, Category = "Settings")
 		EGripMovementReplicationSettings GripMovementReplicationSetting;
 
@@ -1045,6 +1064,7 @@ public:
 		float CachedStiffness;
 		float CachedDamping;
 		FBPAdvGripPhysicsSettings CachedPhysicsSettings;
+		FName CachedBoneName;
 
 		FGripValueCache():
 			bWasInitiallyRepped(false),
@@ -1053,7 +1073,8 @@ public:
 			CachedGripCollisionType(EGripCollisionType::InteractiveCollisionWithSweep),
 			CachedGripMovementReplicationSetting(EGripMovementReplicationSettings::ForceClientSideMovement),
 			CachedStiffness(1500.0f),
-			CachedDamping(200.0f)
+			CachedDamping(200.0f),
+			CachedBoneName(NAME_None)
 		{}
 
 	}ValueCache;
@@ -1103,7 +1124,7 @@ public:
 		return false;
 	}
 
-	FBPActorGripInformation():
+	FBPActorGripInformation() :
 		GripTargetType(EGripTargetType::ActorGrip),
 		GrippedObject(nullptr),
 		GripCollisionType(EGripCollisionType::InteractiveCollisionWithPhysics),
@@ -1111,6 +1132,7 @@ public:
 		bColliding(false),
 		RelativeTransform(FTransform::Identity),
 		bIsSlotGrip(false),
+		GrippedBoneName(NAME_None),
 		GripMovementReplicationSetting(EGripMovementReplicationSettings::ForceClientSideMovement),
 		bOriginalReplicatesMovement(false),
 		bOriginalGravity(false),
@@ -1124,78 +1146,7 @@ public:
 	{
 	}	
 
-	/** Network serialization */
-	/*bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
-	{
-		Ar << GripTargetType;
-		Ar << GrippedObject;
-		Ar << GripCollisionType;
-		Ar << GripLateUpdateSetting;
-
-		Ar << RelativeTransform;
-
-		Ar << GripMovementReplicationSetting;
-
-		// If on colliding server, otherwise doesn't matter to client
-		//	Ar << bColliding;
-
-		// This doesn't matter to clients
-		//Ar << bOriginalReplicatesMovement;
-
-		bool bHadAttachment = bHasSecondaryAttachment;
-
-		Ar << bHasSecondaryAttachment;
-		Ar << LerpToRate;
-
-		// If this grip has a secondary attachment
-		if (bHasSecondaryAttachment)
-		{
-			Ar << SecondaryAttachment;
-			Ar << SecondaryRelativeLocation;
-			Ar << SecondarySmoothingScaler;
-		}
-
-		// Manage lerp states
-		if (Ar.IsLoading())
-		{
-			if (bHadAttachment != bHasSecondaryAttachment)
-			{
-				if (LerpToRate < 0.01f)
-					GripLerpState = EGripLerpState::NotLerping;
-				else
-				{
-					// New lerp
-					if (bHasSecondaryAttachment)
-					{
-						curLerp = LerpToRate;
-						GripLerpState = EGripLerpState::StartLerp;
-					}
-					else // Post Lerp
-					{
-						curLerp = LerpToRate;
-						GripLerpState = EGripLerpState::EndLerp;
-					}
-				}
-			}
-		}
-
-		// Now always replicating these two, in case people want to pass in custom values using it
-		Ar << Damping;
-		Ar << Stiffness;
-
-		bOutSuccess = true;
-		return true;
-	}*/
 };
-
-/*template<>
-struct TStructOpsTypeTraits< FBPActorGripInformation > : public TStructOpsTypeTraitsBase2<FBPActorGripInformation>
-{
-	enum
-	{
-		WithNetSerializer = true
-	};
-};*/
 
 USTRUCT(BlueprintType, Category = "VRExpansionLibrary")
 struct VREXPANSIONPLUGIN_API FBPInterfaceProperties

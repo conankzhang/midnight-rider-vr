@@ -2,7 +2,6 @@
 
 #include "VRBaseCharacter.h"
 #include "VRPathFollowingComponent.h"
-#include "GripMotionControllerComponent.h"
 //#include "Runtime/Engine/Private/EnginePrivate.h"
 
 FName AVRBaseCharacter::LeftMotionControllerComponentName(TEXT("Left Grip Motion Controller"));
@@ -85,6 +84,43 @@ AVRBaseCharacter::AVRBaseCharacter(const FObjectInitializer& ObjectInitializer)
 	MinNetUpdateFrequency = 100.0f;
 }
 
+//=============================================================================
+void AVRBaseCharacter::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AVRBaseCharacter, SeatInformation, COND_OwnerOnly);
+}
+
+bool AVRBaseCharacter::Server_SetSeatedMode_Validate(USceneComponent * SeatParent, bool bSetSeatedMode, FVector_NetQuantize100 TargetLoc, float TargetYaw, float AllowedRadius, float AllowedRadiusThreshold, bool bZeroToHead)
+{
+	return true;
+}
+
+void AVRBaseCharacter::Server_SetSeatedMode_Implementation(USceneComponent * SeatParent, bool bSetSeatedMode, FVector_NetQuantize100 TargetLoc, float TargetYaw, float AllowedRadius, float AllowedRadiusThreshold, bool bZeroToHead)
+{
+	SetSeatedMode(SeatParent, bSetSeatedMode, TargetLoc, TargetYaw, AllowedRadius, AllowedRadiusThreshold, bZeroToHead);
+}
+
+void AVRBaseCharacter::Server_ReZeroSeating_Implementation(FVector_NetQuantize100 NewRelativeHeadLoc, float NewRelativeHeadYaw, bool bZeroToHead = true)
+{
+	if (FMath::IsNearlyEqual(SeatInformation.StoredYaw, NewRelativeHeadYaw) && SeatInformation.StoredLocation.Equals(NewRelativeHeadLoc))
+		return;
+
+	SeatInformation.StoredYaw = NewRelativeHeadYaw;
+	SeatInformation.StoredLocation = NewRelativeHeadLoc;
+
+	// Null out Z so we keep feet location if not zeroing to head
+	if (!bZeroToHead)
+		SeatInformation.StoredLocation.Z = 0.0f;
+
+	OnRep_SeatedCharInfo();
+}
+
+bool AVRBaseCharacter::Server_ReZeroSeating_Validate(FVector_NetQuantize100 NewLoc, float NewYaw, bool bZeroToHead = true)
+{
+	return true;
+}
+
 void AVRBaseCharacter::OnCustomMoveActionPerformed_Implementation(EVRMoveAction MoveActionType, FVector MoveActionVector, FRotator MoveActionRotator)
 {
 
@@ -148,10 +184,10 @@ void AVRBaseCharacter::NotifyOfTeleport_Implementation()
 	//	VRRootReference->GenerateOffsetToWorld();
 
 	if (LeftMotionController)
-		LeftMotionController->PostTeleportMoveGrippedActors();
+		LeftMotionController->PostTeleportMoveGrippedObjects();
 
 	if (RightMotionController)
-		RightMotionController->PostTeleportMoveGrippedActors();
+		RightMotionController->PostTeleportMoveGrippedObjects();
 }
 
 void AVRBaseCharacter::ExtendedSimpleMoveToLocation(const FVector& GoalLocation, float AcceptanceRadius, bool bStopOnOverlap, bool bUsePathfinding, bool bProjectDestinationToNavigation, bool bCanStrafe, TSubclassOf<UNavigationQueryFilter> FilterClass, bool bAllowPartialPaths)

@@ -16,6 +16,17 @@ UVRBaseCharacterMovementComponent::UVRBaseCharacterMovementComponent(const FObje
 {
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
+
+	//#TODO: Might not be ready to make this change globally yet....
+
+	// Set Acceleration and braking deceleration walking to high values to avoid ramp up on speed
+	// Realized that I wasn't doing this here for people to default to no acceleration.
+	/*this->bRequestedMoveUseAcceleration = false;
+	this->MaxAcceleration = 200048.0f;
+	this->BrakingDecelerationWalking = 200048.0f;
+	*/
+
+
 	AdditionalVRInputVector = FVector::ZeroVector;	
 	CustomVRInputVector = FVector::ZeroVector;
 	bApplyAdditionalVRInputVectorAsNegative = true;
@@ -42,6 +53,43 @@ UVRBaseCharacterMovementComponent::UVRBaseCharacterMovementComponent(const FObje
 
 	bWasInPushBack = false;
 	bIsInPushBack = false;
+}
+
+void UVRBaseCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+{
+
+	if (MovementMode == MOVE_Custom && CustomMovementMode == (uint8)EVRCustomMovementMode::VRMOVE_Seated)
+	{
+		const FVector InputVector = ConsumeInputVector();
+		if (!HasValidData() || ShouldSkipUpdate(DeltaTime))
+		{
+			return;
+		}
+
+		// Skip the perform movement logic, run the re-seat logic instead - running base movement component tick instead
+		Super::Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+		// See if we fell out of the world.
+		//const bool bIsSimulatingPhysics = UpdatedComponent->IsSimulatingPhysics();
+		//if (CharacterOwner->Role == ROLE_Authority && (!bCheatFlying || bIsSimulatingPhysics) && !CharacterOwner->CheckStillInWorld())
+		//{
+		//	return;
+		//}
+
+		// If we are the owning client or the server then run the re-basing
+		if (CharacterOwner->Role > ROLE_SimulatedProxy)
+		{
+			// Run offset logic here, the server will update simulated proxies with the movement replication
+			if (AVRBaseCharacter * BaseChar = Cast<AVRBaseCharacter>(CharacterOwner))
+			{
+				BaseChar->TickSeatInformation(DeltaTime);
+			}
+
+		}
+
+	}
+	else
+		Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UVRBaseCharacterMovementComponent::StartPushBackNotification(FHitResult HitResult)
@@ -311,34 +359,7 @@ bool UVRBaseCharacterMovementComponent::DoMASnapTurn()
 		}
 		else
 		{
-			AController* OwningController = OwningCharacter->GetController();
-
-			if (!OwningController)
-			{
-				MoveAction.MoveAction = EVRMoveAction::VRMOVEACTION_None;
-				return false;
-			}
-
-			FVector NewLocation;
-			FRotator NewRotation;
-			FVector OrigLocation = OwningCharacter->GetActorLocation();
-			FVector PivotPoint = OwningCharacter->GetActorTransform().InverseTransformPosition(OwningCharacter->GetVRLocation());
-
-			NewRotation = OwningCharacter->bUseControllerRotationYaw ? OwningController->GetControlRotation() : OwningCharacter->GetActorRotation();
-			NewRotation.Pitch = 0.0f;
-			NewRotation.Roll = 0.0f;
-
-			NewLocation = OrigLocation + NewRotation.RotateVector(PivotPoint);
-			NewRotation = (NewRotation.Quaternion() * MoveAction.MoveActionRot.Quaternion()).Rotator();
-			NewLocation -= NewRotation.RotateVector(PivotPoint);
-
-			// Zero this out
-			MoveAction.MoveActionLoc = NewLocation - OrigLocation;
-
-			if (OwningCharacter->bUseControllerRotationYaw)
-				OwningController->SetControlRotation(NewRotation);
-
-			OwningCharacter->SetActorLocationAndRotation(OrigLocation + MoveAction.MoveActionLoc, NewRotation);
+			MoveAction.MoveActionLoc = OwningCharacter->AddActorWorldRotationVR(MoveAction.MoveActionRot, true);
 			return true;
 		}
 	}
@@ -398,6 +419,8 @@ void UVRBaseCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterat
 	case EVRCustomMovementMode::VRMOVE_LowGrav:
 		PhysCustom_LowGrav(deltaTime, Iterations);
 		break;
+	case EVRCustomMovementMode::VRMOVE_Seated:
+		break;
 	default:
 		Super::PhysCustom(deltaTime, Iterations);
 		break;
@@ -430,50 +453,53 @@ void UVRBaseCharacterMovementComponent::PhysCustom_Climbing(float deltaTime, int
 
 	FVector OldLocation = UpdatedComponent->GetComponentLocation();
 	const FVector Adjusted = /*(Velocity * deltaTime) + */CustomVRInputVector;
+	FVector Delta = Adjusted + AdditionalVRInputVector;
+	bool bZeroDelta = Delta.IsNearlyZero();
 
-	FHitResult Hit(1.f);
-	SafeMoveUpdatedComponent(Adjusted + AdditionalVRInputVector, UpdatedComponent->GetComponentQuat(), true, Hit);
+	FStepDownResult StepDownResult;
+
+	// Instead of remaking the step up function, temp assign a custom step height and then fall back to the old one afterward
+	// This isn't the "proper" way to do it, but it saves on re-making stepup() for both vr characters seperatly (due to different hmd injection)
+	float OldMaxStepHeight = MaxStepHeight;
+	MaxStepHeight = VRClimbingStepHeight;
 	bool bSteppedUp = false;
 
-	if (Hit.Time < 1.f)
+	if (!bZeroDelta)
 	{
-		const FVector GravDir = FVector(0.f, 0.f, -1.f);
-		const FVector VelDir = (CustomVRInputVector).GetSafeNormal();//Velocity.GetSafeNormal();
-		const float UpDown = GravDir | VelDir;
+		FHitResult Hit(1.f);
+		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentQuat(), true, Hit);
 
-		//bool bSteppedUp = false;
-		if ((FMath::Abs(Hit.ImpactNormal.Z) < 0.2f) && (UpDown < 0.5f) && (UpDown > -0.2f) && CanStepUp(Hit))
+		if (Hit.Time < 1.f)
 		{
-			float stepZ = UpdatedComponent->GetComponentLocation().Z;
+			const FVector GravDir = FVector(0.f, 0.f, -1.f);
+			const FVector VelDir = (CustomVRInputVector).GetSafeNormal();//Velocity.GetSafeNormal();
+			const float UpDown = GravDir | VelDir;
 
-			// Instead of remaking the step up function, temp assign a custom step height and then fall back to the old one afterward
-			// This isn't the "proper" way to do it, but it saves on re-making stepup() for both vr characters seperatly (due to different hmd injection)
-			float OldMaxStepHeight = MaxStepHeight;
-			MaxStepHeight = VRClimbingStepHeight;
-
-			// Making it easier to step up here with the multiplier, helps avoid falling back off
-			bSteppedUp = VRClimbStepUp(GravDir, ((Adjusted * VRClimbingStepUpMultiplier) + AdditionalVRInputVector) * (1.f - Hit.Time), Hit);
-
-			MaxStepHeight = OldMaxStepHeight;
-
-			if (bSteppedUp)
+			//bool bSteppedUp = false;
+			if ((FMath::Abs(Hit.ImpactNormal.Z) < 0.2f) && (UpDown < 0.5f) && (UpDown > -0.2f) && CanStepUp(Hit))
 			{
-				OldLocation.Z = UpdatedComponent->GetComponentLocation().Z + (OldLocation.Z - stepZ);
+				float stepZ = UpdatedComponent->GetComponentLocation().Z;
+
+				// Making it easier to step up here with the multiplier, helps avoid falling back off
+				bSteppedUp = VRClimbStepUp(GravDir, ((Adjusted * VRClimbingStepUpMultiplier) + AdditionalVRInputVector) * (1.f - Hit.Time), Hit, &StepDownResult);
+
+				if (bSteppedUp)
+				{
+					OldLocation.Z = UpdatedComponent->GetComponentLocation().Z + (OldLocation.Z - stepZ);
+				}
+			}
+
+			if (!bSteppedUp)
+			{
+				//adjust and try again
+				HandleImpact(Hit, deltaTime, Adjusted);
+				SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 			}
 		}
-
-		if (!bSteppedUp)
-		{
-			//adjust and try again
-			HandleImpact(Hit, deltaTime, Adjusted);
-			SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
-		}
 	}
 
-	if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
-	{
-		Velocity = (((UpdatedComponent->GetComponentLocation() - OldLocation) - AdditionalVRInputVector) / deltaTime).GetClampedToMaxSize(VRClimbingMaxReleaseVelocitySize);
-	}
+	// Revert to old max step height
+	MaxStepHeight = OldMaxStepHeight;
 
 	if (bSteppedUp)
 	{
@@ -485,10 +511,49 @@ void UVRBaseCharacterMovementComponent::PhysCustom_Climbing(float deltaTime, int
 				SetReplicatedMovementMode(DefaultPostClimbMovement);
 				// Before doing this the server could rollback the client from a bad step up and leave it hanging in climb mode
 				// This way the rollback replay correctly sets the movement mode from the step up request
+
+				Velocity = FVector::ZeroVector;
 			}
 
 			// Notify the end user that they probably want to stop gripping now
 			ownerCharacter->OnClimbingSteppedUp();
+		}
+	}
+
+	// Update floor.
+	// StepUp might have already done it for us.
+	if (StepDownResult.bComputedFloor)
+	{
+		CurrentFloor = StepDownResult.FloorResult;
+	}
+	else
+	{
+		FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, bZeroDelta, NULL);
+	}
+
+	if (CurrentFloor.IsWalkableFloor())
+	{
+		if(CurrentFloor.GetDistanceToFloor() < (MIN_FLOOR_DIST + MAX_FLOOR_DIST) / 2)
+			AdjustFloorHeight();
+
+		SetBase(CurrentFloor.HitResult.Component.Get(), CurrentFloor.HitResult.BoneName);
+	}
+	else if (CurrentFloor.HitResult.bStartPenetrating)
+	{
+		// The floor check failed because it started in penetration
+		// We do not want to try to move downward because the downward sweep failed, rather we'd like to try to pop out of the floor.
+		FHitResult Hit(CurrentFloor.HitResult);
+		Hit.TraceEnd = Hit.TraceStart + FVector(0.f, 0.f, MAX_FLOOR_DIST);
+		const FVector RequestedAdjustment = GetPenetrationAdjustment(Hit);
+		ResolvePenetration(RequestedAdjustment, Hit, UpdatedComponent->GetComponentQuat());
+		bForceNextFloorCheck = true;
+	}
+
+	if(!bSteppedUp || !SetDefaultPostClimbMovementOnStepUp)
+	{
+		if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+		{
+			Velocity = (((UpdatedComponent->GetComponentLocation() - OldLocation) - AdditionalVRInputVector) / deltaTime).GetClampedToMaxSize(VRClimbingMaxReleaseVelocitySize);
 		}
 	}
 }
@@ -583,17 +648,10 @@ void UVRBaseCharacterMovementComponent::SetReplicatedMovementMode(EVRConjoinedMo
 }
 
 
-void UVRBaseCharacterMovementComponent::ReplicateMoveToServer(float DeltaTime, const FVector& NewAcceleration)
+/*void UVRBaseCharacterMovementComponent::ReplicateMoveToServer(float DeltaTime, const FVector& NewAcceleration)
 {
 	Super::ReplicateMoveToServer(DeltaTime, NewAcceleration);
-
-	if (bHadMoveActionThisFrame)
-	{
-		// TODO: Remove this? don't need it anymore?
-		// Make sure these are cleaned out for the next frame
-	//	MoveAction = EVRMoveAction::VRMOVEACTION_None;
-	}
-}
+}*/
 
 /*void UVRBaseCharacterMovementComponent::SendClientAdjustment()
 {
@@ -723,7 +781,7 @@ void UVRBaseCharacterMovementComponent::PerformMovement(float DeltaSeconds)
 	}
 
 	// Handle move actions here
-	bHadMoveActionThisFrame = CheckForMoveAction();
+	CheckForMoveAction();
 
 	// Clear out this flag prior to movement so we can see if it gets changed
 	bIsInPushBack = false;
